@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    
+    <Import Project="..\..\common.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>BBT.MyProjectName</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkPackageVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\BBT.MyProjectName.Domain\BBT.MyProjectName.Domain.csproj" />
+      <ProjectReference Include="..\BBT.MyProjectName.TestBase\BBT.MyProjectName.TestBase.csproj" />
+    </ItemGroup>
+
+</Project>

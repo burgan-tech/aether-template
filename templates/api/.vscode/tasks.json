@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-myprojectname",
+            "dependsOn": "init-mocks",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/BBT.MyProjectName.HttpApi.Host/BBT.MyProjectName.HttpApi.Host.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "appId": "MyProjectName",
+            "appPort": 5237,
+            "httpPort": 42010,
+            "grpcPort": 42011,
+            "placementHostAddress": "localhost:50006",
+            "label": "dapr-debug-myprojectname",
+            "type": "dapr",
+            "dependsOn": "build-myprojectname",
+            "componentsPath": "./etc/Dapr/Components"
+        },
+        {
+            "appId": "MyProjectName",
+            "label": "daprd-down-myprojectname",
+            "type": "daprd-down",
+            "dependsOn": "stop-mocks",
+        }
+    ]
+}
