@@ -1,9 +1,8 @@
-using System.IO.Compression;
 using System.Text.Json.Serialization;
-using BBT.Aether.AspNetCore.ExceptionHandling;
 using BBT.Aether.Domain.Services;
+using BBT.Aether.Events;
+using BBT.MyProjectName.Backgrounds;
 using BBT.MyProjectName.Data;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -23,6 +22,10 @@ public static class MyProjectNameApiServiceCollectionExtensions
         ConfigureRedis(services);
         ConfigureHealthChecks(services);
         ConfigureRoute(services);
+
+        services.AddAetherAmbientServiceProvider();
+
+        services.AddDaprDistributedLock(configuration["DAPR_LOCK_STORE_NAME"] ?? "myprojectname-lock");
         return services;
     }
 
@@ -50,13 +53,38 @@ public static class MyProjectNameApiServiceCollectionExtensions
             options.UseNpgsql(configuration.GetConnectionString("Default"), npgsqlOptions =>
             {
                 npgsqlOptions.MigrationsHistoryTable("__MyProjectName_Migrations");
-                // Enable retrying failed database operations
-                npgsqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(30),
-                    errorCodesToAdd: null);
             });
         });
+
+        services.AddAetherUnitOfWorkMiddleware();
+        
+        services.AddAetherEventBus(options =>
+            {
+                options.DefaultSource = "urn:bbt:myprojectname";
+                options.PrefixEnvironmentToTopic = true;
+                options.PubSubName = configuration["DAPR_PUBSUB_NAME"] ?? "pubsub";
+            }
+        );
+        
+        services.AddAetherDbContext<MessagingDbContext>(options =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("Default"), npgsqlOptions =>
+            {
+                npgsqlOptions.MigrationsHistoryTable("__MyProjectName_Migrations", "sys_queues");
+            });
+        });
+
+        services.AddAetherDomainEvents<MessagingDbContext>(options =>
+        {
+            options.DispatchStrategy = DomainEventDispatchStrategy.AlwaysUseOutbox;
+        });
+
+        services.AddAetherOutbox<MessagingDbContext>();
+        services.AddAetherInbox<MessagingDbContext>();
+
+        // Register outbox message processor as a hosted service
+        // services.AddHostedService<OutboxBackgroundService>();
+        // services.AddHostedService<InboxBackgroundService>();
 
         services.AddSingleton<IDataSeedService, MyProjectNameDataSeedService>();
     }
@@ -73,7 +101,7 @@ public static class MyProjectNameApiServiceCollectionExtensions
 
     private static void ConfigureTelemetry(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddFrameworkTelemetry(configuration);
+        services.AddAetherTelemetry(configuration);
     }
 
     private static void ConfigureDistributedCache(IServiceCollection services)
@@ -107,7 +135,7 @@ public static class MyProjectNameApiServiceCollectionExtensions
 
         // Add API Versioning using the custom configuration
         services.AddAetherApiVersioning(apiTitle: "MyProjectName API");
-        
+
         // Add services to the container.
         services.AddControllers()
             .AddJsonOptions(options =>

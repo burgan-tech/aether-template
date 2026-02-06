@@ -1,5 +1,6 @@
 using BBT.Aether.Application;
 using BBT.Aether.Application.Dtos;
+using BBT.Aether.Results;
 
 namespace BBT.MyProjectName.Issues;
 
@@ -8,7 +9,7 @@ public interface IIssueAppService : IApplicationService
     Task<IssueDto> GetAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<PagedResultDto<IssueDto>> GetListAsync(GetIssuesInput input, CancellationToken cancellationToken = default);
-    Task<IssueDto> CreateAsync(Guid repositoryId, CreateIssueInput input,
+    Task<Result<IssueDto>> CreateAsync(Guid repositoryId, CreateIssueInput input,
         CancellationToken cancellationToken = default);
 
     Task<IssueDto> UpdateAsync(Guid id, UpdateIssueInput input, CancellationToken cancellationToken = default);

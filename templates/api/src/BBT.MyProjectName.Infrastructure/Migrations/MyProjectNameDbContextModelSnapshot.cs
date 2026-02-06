@@ -25,11 +25,10 @@ namespace BBT.MyProjectName.Migrations
             modelBuilder.Entity("BBT.MyProjectName.Issues.Comment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("CreatedAt");
 
                     b.Property<Guid>("IssueId")
@@ -53,15 +52,7 @@ namespace BBT.MyProjectName.Migrations
             modelBuilder.Entity("BBT.MyProjectName.Issues.GitRepository", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("ConcurrencyStamp");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -76,7 +67,6 @@ namespace BBT.MyProjectName.Migrations
             modelBuilder.Entity("BBT.MyProjectName.Issues.Issue", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("AssignedUserId")
@@ -85,15 +75,8 @@ namespace BBT.MyProjectName.Migrations
                     b.Property<int?>("CloseReason")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("CreatedAt");
 
                     b.Property<string>("CreatedBy")
@@ -113,10 +96,10 @@ namespace BBT.MyProjectName.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LastCommentTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("ModifiedAt");
 
                     b.Property<string>("ModifiedBy")
@@ -154,19 +137,11 @@ namespace BBT.MyProjectName.Migrations
             modelBuilder.Entity("BBT.MyProjectName.Issues.Label", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Color")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("ConcurrencyStamp");
 
                     b.Property<string>("Name")
                         .IsRequired()

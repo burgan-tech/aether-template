@@ -1,12 +1,72 @@
 version: "3.9"
 services:
+  
+  bbt-myprojectname-dapr:
+    image: "daprio/daprd"
+    container_name: bbt-myprojectname-dapr
+    command: [
+      "./daprd",
+      "--app-id", "myprojectname-app",
+      "--app-port", "5237",
+      "--resources-path", "./components",
+      "--dapr-grpc-port", "42111",
+      "--dapr-http-port", "42110",
+      "--scheduler-host-address", "dapr-scheduler:50007",
+      "--placement-host-address", "dapr-placement:50005",
+      "--app-channel-address", "host.orb.local"
+    ]
+    volumes:
+      - "../../etc/dapr/components:/components"
+    ports:
+      - "42110:42110"
+      - "42111:42111"
+    networks:
+      - bbt-development
+    extra_hosts:
+      - "host.orb.local:host-gateway"
+    depends_on:
+      - dapr-placement
+      - dapr-scheduler
+      - redis
+      - vault
+
+  dapr-placement:
+    image: "daprio/dapr"
+    container_name: dapr-placement
+    command: [ "./placement" ]
+    ports:
+      - "50005:50005"
+    networks:
+      - bbt-development
+
+  dapr-scheduler:
+    image: "daprio/scheduler"
+    container_name: dapr-scheduler
+    user: "0:0"
+    command: [
+      "./scheduler",
+      "--port",
+      "50007",
+      "--etcd-data-dir",
+      "/data"
+    ]
+    ports:
+      - "50007:50007"
+    volumes:
+      - type: tmpfs
+        target: /data
+        tmpfs:
+          size: "64m"
+          mode: 1777
+    networks:
+      - bbt-development
 
   redis:
     container_name: bbt-redis
     image: redis:latest
     restart: always
     ports:
-      - '6378:6379'
+      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning
     volumes:
       - redis:/data
@@ -69,7 +129,19 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-      retries: 5
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "--proxy",
+          "off",
+          "http://vault:8200/v1/sys/health?standbyok=true",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     command: server -dev -dev-root-token-id="admin"
     networks:
       - bbt-development
@@ -85,67 +157,42 @@ services:
       - bbt-development
 
   # optional
-  elastic:
-    container_name: bbt-elastic
-    image: elasticsearch:8.8.1
+  openobserve:
+    container_name: bbt-openobserve
+    image: public.ecr.aws/zinclabs/openobserve:latest
     environment:
-      - xpack.security.enabled=false
-      - "discovery.type=single-node"
+      ZO_ROOT_USER_EMAIL: "root@example.com"
+      ZO_ROOT_USER_PASSWORD: "Complexpass#@123"
+      ZO_DATA_DIR: "/data"
     ports:
-      - 9200:9200
+      - "5080:5080"
+    volumes:
+      - openobserve:/data
     networks:
       - bbt-development
-
-  apm:
-    container_name: bbt-apm
-    image: docker.elastic.co/apm/apm-server:7.17.23
-    networks:
-      - bbt-development
-    ports:
-      - "5200:8200"
-    command: >
-      apm-server -e
-               -E apm-server.ssl.enabled=false
-               -E apm-server.rum.enabled=true
-               -E apm-server.rum.allow_origins=["*"]
-               -E setup.template.settings.index.number_of_replicas=0
-               -E setup.kibana.host=bbt-kibana:5601
-               -E apm-server.kibana.enabled=true
-               -E apm-server.kibana.host=bbt-kibana:5601
-               -E output.elasticsearch.hosts=["bbt-elastic:9200"]
-    depends_on:
-      - elastic
-      - kibana
-
-  # optional
-  kibana:
-    container_name: bbt-kibana
-    image: kibana:8.8.1
-    environment:
-      - ELASTICSEARCH_URL=http://bbt-elastic:9200
-      - ELASTICSEARCH_HOSTS=http://bbt-elastic:9200
-      - xpack.security.enabled=false
-    networks:
-      - bbt-development
-    depends_on:
-      - elastic
-    ports:
-      - 5601:5601
 
   # optional
   grafana:
     container_name: bbt-grafana
     image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - grafana:/var/lib/grafana
     ports:
       - "3000:3000"
     networks:
       - bbt-development
-    # depends_on:
-    #   - prometheus
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
   # optional
+  # OpenTelemetry Collector
   otel-collector:
-    container_name: otel-collector
+    container_name: bbt-otel-collector
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./config/otel/otel-config.yaml:/etc/otelcol-contrib/config.yaml
@@ -157,21 +204,30 @@ services:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP http receiver
       - "55679:55679" # zpages extension
+    depends_on:
+      - openobserve
     networks:
       - bbt-development
 
   # optional
-  # prometheus:
-  #   container_name: bbt-prometheus
-  #   image: prom/prometheus:latest
-  #   command:
-  #     - "--config.file=/etc/prometheus.yml"
-  #   volumes:
-  #     - ./config/prometheus:/etc
-  #   ports:
-  #     - "9090:9090"
-  #   networks:
-  #     - bbt-development
+  prometheus:
+    container_name: bbt-prometheus
+    image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - bbt-development
+    restart: unless-stopped
 
 networks:
   bbt-development:
@@ -182,5 +238,6 @@ volumes:
   redisinsight:
   postgres:
   pgadmin:
+  openobserve:
+  prometheus:
   grafana:
-  # prometheus:

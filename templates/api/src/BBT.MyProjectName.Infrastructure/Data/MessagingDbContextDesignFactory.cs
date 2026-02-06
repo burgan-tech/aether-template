@@ -4,20 +4,22 @@ using Microsoft.Extensions.Configuration;
 
 namespace BBT.MyProjectName.Data;
 
-public class MyProjectNameDbContextFactory : IDesignTimeDbContextFactory<MyProjectNameDbContext>
+
+public sealed class MessagingDbContextDesignFactory: IDesignTimeDbContextFactory<MessagingDbContext>
 {
-    public MyProjectNameDbContext CreateDbContext(string[] args)
+    public MessagingDbContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<MyProjectNameDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<MessagingDbContext>();
         optionsBuilder.UseNpgsql(GetConnectionStringFromConfiguration(), npgsqlOptions =>
         {
-            npgsqlOptions.MigrationsHistoryTable("__MyProjectName_Migrations");
-            npgsqlOptions.EnableRetryOnFailure(3);
+            npgsqlOptions.MigrationsHistoryTable("__MyProjectName_Migrations", "sys_queues");
         });
 
-        return new MyProjectNameDbContext(optionsBuilder.Options);
+        return new MessagingDbContext(
+            optionsBuilder.Options
+        );
     }
-
+    
     private static string? GetConnectionStringFromConfiguration()
     {
         return BuildConfiguration()

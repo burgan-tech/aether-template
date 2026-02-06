@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\common.props" />
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>BBT.MyProjectName</RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="$(AutoMapperPackageVersion)" />
-    <PackageReference Include="BBT.Aether.Application" Version="$(AetherPackageVersion)" />
-    <ProjectReference Include="..\BBT.MyProjectName.Domain\BBT.MyProjectName.Domain.csproj" />
-  </ItemGroup>
+    <Import Project="..\..\common.props"/>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>BBT.MyProjectName</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../../../../aether/framework/src/BBT.Aether.Application/BBT.Aether.Application.csproj"/>
+        <ProjectReference Include="..\BBT.MyProjectName.Domain\BBT.MyProjectName.Domain.csproj"/>
+        <ProjectReference Include="../../../../../aether/framework/src/BBT.Aether.Aspects/BBT.Aether.Aspects.csproj"/>
+    </ItemGroup>
 </Project>

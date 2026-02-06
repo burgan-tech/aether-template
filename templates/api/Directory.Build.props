@@ -8,7 +8,7 @@
         <!-- Microsoft packages -->
         <MicrosoftPackageVersion>9.0.0</MicrosoftPackageVersion>
         <!-- Dapr packages -->
-        <DaprPackageVersion>1.14.0</DaprPackageVersion>
+        <DaprPackageVersion>1.15.4</DaprPackageVersion>
         <!-- AutoMapper packages -->
         <AutoMapperPackageVersion>13.0.1</AutoMapperPackageVersion>
       

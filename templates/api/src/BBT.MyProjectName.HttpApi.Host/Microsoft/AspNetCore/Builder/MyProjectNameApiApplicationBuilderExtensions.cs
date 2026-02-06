@@ -9,6 +9,7 @@ public static class MyProjectNameApiApplicationBuilderExtensions
 {
     public static WebApplication UseApiHostModule(this WebApplication app)
     {
+        app.UseAetherAmbientServiceProvider();
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -36,6 +37,7 @@ public static class MyProjectNameApiApplicationBuilderExtensions
         };
         app.UseRequestLocalization(localizationOptions);
         app.UseAetherApiVersioning();
+        app.UseAetherUnitOfWork();
         app.UseRouting();
         app.MapControllers();
         app.UseExceptionHandler();

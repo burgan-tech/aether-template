@@ -1,3 +1,5 @@
+using BBT.Aether.AspNetCore.Controllers;
+using BBT.Aether.AspNetCore.Results;
 using BBT.MyProjectName.Issues;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +8,7 @@ namespace BBT.MyProjectName.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/issues")]
-public sealed class IssueController(IIssueAppService appService) : ControllerBase
+public sealed class IssueController(IIssueAppService appService) : AetherControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetPagedListAsync([FromQuery] GetIssuesInput input)
@@ -26,7 +28,8 @@ public sealed class IssueController(IIssueAppService appService) : ControllerBas
     public async Task<IActionResult> CreateAsync(Guid repositoryId, CreateIssueInput input)
     {
         var item = await appService.CreateAsync(repositoryId, input);
-        return Ok(item);
+
+        return FromResult(item);
     }
 
     [HttpPut("{id}")]

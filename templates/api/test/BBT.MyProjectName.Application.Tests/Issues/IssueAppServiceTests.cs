@@ -44,7 +44,7 @@ public abstract class IssueAppServiceTests<TEntry> : ApplicationTestBase<TEntry>
         var result = await _issueAppService.CreateAsync(_testData.Repository_Id_1, issueInput);
 
         // Assert
-        result.ShouldNotBeNull();
+        result.Value.ShouldNotBeNull();
     }
 
     [Fact]

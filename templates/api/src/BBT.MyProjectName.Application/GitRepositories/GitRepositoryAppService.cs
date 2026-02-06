@@ -1,8 +1,10 @@
 using BBT.Aether.Application.Services;
 using BBT.Aether.Domain.Repositories;
 using BBT.MyProjectName.Issues;
+using Microsoft.EntityFrameworkCore;
 
 namespace BBT.MyProjectName.GitRepositories;
+
 
 public sealed class GitRepositoryAppService(IServiceProvider serviceProvider, IGitRepository repository) : CrudAppService<
     GitRepository, 

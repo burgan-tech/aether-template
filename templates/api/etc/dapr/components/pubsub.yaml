@@ -6,6 +6,6 @@ spec:
   type: pubsub.redis
   metadata:
   - name: redisHost
-    value: localhost:6378
+    value: bbt-redis:6379
   - name: redisPassword
     value: ""

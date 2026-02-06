@@ -21,6 +21,7 @@
                 "DAPR_SECRET_STORE_NAME": "myprojectname-secretstore",
                 "DAPR_STATE_STORE_NAME": "myprojectname-cache",
                 "DAPR_PUBSUB_NAME": "myprojectname-pubsub",
+                "DAPR_LOCK_STORE_NAME": "myprojectname-lock",
                 "DAPR_PLACEMENT_HOST": "localhost:50006",
                 "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
                 "OTEL_SERVICE_NAME": "myprojectname"
@@ -49,6 +50,7 @@
                 "DAPR_SECRET_STORE_NAME": "myprojectname-secretstore",
                 "DAPR_STATE_STORE_NAME": "myprojectname-cache",
                 "DAPR_PUBSUB_NAME": "myprojectname-pubsub",
+                "DAPR_LOCK_STORE_NAME": "myprojectname-lock",
                 "DAPR_PLACEMENT_HOST": "localhost:50006",
                 "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
                 "OTEL_SERVICE_NAME": "myprojectname"

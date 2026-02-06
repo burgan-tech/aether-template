@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using BBT.Aether;
 using BBT.Aether.Domain.Entities.Auditing;
+using BBT.MyProjectName.Issues.Events;
 
 namespace BBT.MyProjectName.Issues;
 
@@ -22,14 +21,15 @@ public class Issue : AuditedAggregateRoot<Guid>
 
     public void SetTitle(string title)
     {
-        Title = Check.NotNullOrWhiteSpace(title, nameof(title));
+        // Title = Check.NotNullOrWhiteSpace(title, nameof(title));
+        Title = title;
     }
 
     public void Close(IssueCloseReason reason)
     {
         IsClosed = true;
         CloseReason = reason;
-         }
+    }
 
     public void ReOpen()
     {
@@ -78,6 +78,14 @@ public class Issue : AuditedAggregateRoot<Guid>
 
         Labels = new Collection<IssueLabel>();
         Comments = new Collection<Comment>();
+
+        AddDistributedEvent(new IssueCreatedEvent(
+            Id,
+            RepositoryId,
+            Title,
+            Text,
+            Tags)
+        );
     }
 
     private Issue()

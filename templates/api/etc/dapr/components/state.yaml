@@ -7,7 +7,7 @@ spec:
   version: v1
   metadata:
   - name: redisHost
-    value: localhost:6378
+    value: bbt-redis:6379
   - name: redisPassword
     value: ""
   - name: actorStateStore
