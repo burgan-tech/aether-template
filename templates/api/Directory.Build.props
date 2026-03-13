@@ -2,18 +2,22 @@
     <PropertyGroup>
 
         <!-- All Prism packages -->
-        <AetherPackageVersion>1.0.2</AetherPackageVersion>
+        <AetherPackageVersion>1.0.19</AetherPackageVersion>
         <!-- Elastic Apm packages -->
         <ElasticApmPackageVersion>1.31.0</ElasticApmPackageVersion>
-        <!-- Microsoft packages -->
-        <MicrosoftPackageVersion>9.0.0</MicrosoftPackageVersion>
+         <!-- Microsoft packages -->
+        <MicrosoftPackageVersion>10.0.*</MicrosoftPackageVersion>
+        <!-- EF Core pinned to avoid CS1705 (assembly version mismatch) across projects -->
+        <EfCorePackageVersion>10.0.4.0</EfCorePackageVersion>
+        <!-- HealthChecks packages - currently only support .NET 9.0 -->
+        <HealthChecksPackageVersion>9.0.0</HealthChecksPackageVersion>
         <!-- Dapr packages -->
-        <DaprPackageVersion>1.14.0</DaprPackageVersion>
+        <DaprPackageVersion>1.16.1</DaprPackageVersion>
         <!-- AutoMapper packages -->
-        <AutoMapperPackageVersion>13.0.1</AutoMapperPackageVersion>
+        <AutoMapperPackageVersion>16.0.0</AutoMapperPackageVersion>
       
         <!-- Microsot Test SDK packages -->
-        <TestSdkPackageVersion>17.12.0</TestSdkPackageVersion>
+        <TestSdkPackageVersion>18.0.1</TestSdkPackageVersion>
         <NSubstitutePackageVersion>5.3.0</NSubstitutePackageVersion>
         <NSubstituteAnalyzersPackageVersion>1.0.17</NSubstituteAnalyzersPackageVersion>
         <ShouldlyPackageVersion>4.3.0</ShouldlyPackageVersion>

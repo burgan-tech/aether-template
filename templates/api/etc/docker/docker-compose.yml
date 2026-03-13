@@ -1,31 +1,79 @@
-version: "3.9"
 services:
 
+  myprojectname-dapr:
+    image: "daprio/daprd"
+    container_name: myprojectname-dapr
+    command: [
+      "./daprd",
+      "--app-id", "myprojectname-app",
+      "--app-port", "5237",
+      "--resources-path", "./components",
+      "--dapr-grpc-port", "42011",
+      "--dapr-http-port", "42010",
+      "--scheduler-host-address", "dapr-scheduler:50007",
+      "--placement-host-address", "dapr-placement:50005",
+      "--app-channel-address", "host.orb.local"
+    ]
+    volumes:
+      - "../../etc/orchestration/dapr/components:/components"
+    ports:
+      - "42010:42010"
+      - "42011:42011"
+    networks:
+      - bbt-development
+    extra_hosts:
+      - "host.orb.local:host-gateway"
+    depends_on:
+      - dapr-placement
+      - dapr-scheduler
+      - redis
+      - vault
+  
+  dapr-placement:
+    image: "daprio/dapr"
+    container_name: dapr-placement
+    command: ["./placement"]
+    ports:
+      - "50005:50005"
+    networks:
+      - bbt-development
+
+  dapr-scheduler:
+    image: "daprio/scheduler"
+    container_name: dapr-scheduler
+    user: "0:0"
+    command: [
+      "./scheduler",
+      "--port",
+      "50007",
+      "--etcd-data-dir",
+      "/data"
+    ]
+    ports:
+      - "50007:50007"
+    volumes:
+      - type: tmpfs
+        target: /data
+        tmpfs:
+          size: "64m"
+          mode: 1777
+    networks:
+      - bbt-development
+
   redis:
-    container_name: bbt-redis
+    container_name: vnext-redis
     image: redis:latest
     restart: always
     ports:
-      - '6378:6379'
+      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning
     volumes:
       - redis:/data
     networks:
       - bbt-development
 
-  redisinsight:
-    container_name: bbt-red-insight
-    image: redislabs/redisinsight:latest
-    ports:
-      - '5501:8001'
-    volumes:
-      - redisinsight:/db
-    restart: unless-stopped
-    networks:
-      - bbt-development
-
   postgres:
-    container_name: bbt-postgres
+    container_name: vnext-postgres
     image: postgres:latest
     environment:
       POSTGRES_USER: postgres
@@ -39,23 +87,8 @@ services:
     networks:
       - bbt-development
 
-  pgadmin:
-    container_name: bbt-pgadmin
-    image: dpage/pgadmin4:latest
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "info@info.com"
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - "5502:80"
-    restart: unless-stopped
-    networks:
-      - bbt-development
-        
   vault:
-    container_name: bbt-vault
+    container_name: vnext-vault
     image: vault:1.13.3
     ports:
       - "8200:8200"
@@ -69,7 +102,19 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-      retries: 5
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "--proxy",
+          "off",
+          "http://vault:8200/v1/sys/health?standbyok=true",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     command: server -dev -dev-root-token-id="admin"
     networks:
       - bbt-development
@@ -84,68 +129,24 @@ services:
     networks:
       - bbt-development
 
-  # optional
-  elastic:
-    container_name: bbt-elastic
-    image: elasticsearch:8.8.1
+  # OpenObserve for observability
+  openobserve:
+    container_name: vnext-openobserve
+    image: public.ecr.aws/zinclabs/openobserve:latest
     environment:
-      - xpack.security.enabled=false
-      - "discovery.type=single-node"
+      ZO_ROOT_USER_EMAIL: "root@example.com"
+      ZO_ROOT_USER_PASSWORD: "Complexpass#@123"
+      ZO_DATA_DIR: "/data"
     ports:
-      - 9200:9200
+      - "5080:5080"
+    volumes:
+      - openobserve:/data
     networks:
       - bbt-development
 
-  apm:
-    container_name: bbt-apm
-    image: docker.elastic.co/apm/apm-server:7.17.23
-    networks:
-      - bbt-development
-    ports:
-      - "5200:8200"
-    command: >
-      apm-server -e
-               -E apm-server.ssl.enabled=false
-               -E apm-server.rum.enabled=true
-               -E apm-server.rum.allow_origins=["*"]
-               -E setup.template.settings.index.number_of_replicas=0
-               -E setup.kibana.host=bbt-kibana:5601
-               -E apm-server.kibana.enabled=true
-               -E apm-server.kibana.host=bbt-kibana:5601
-               -E output.elasticsearch.hosts=["bbt-elastic:9200"]
-    depends_on:
-      - elastic
-      - kibana
-
-  # optional
-  kibana:
-    container_name: bbt-kibana
-    image: kibana:8.8.1
-    environment:
-      - ELASTICSEARCH_URL=http://bbt-elastic:9200
-      - ELASTICSEARCH_HOSTS=http://bbt-elastic:9200
-      - xpack.security.enabled=false
-    networks:
-      - bbt-development
-    depends_on:
-      - elastic
-    ports:
-      - 5601:5601
-
-  # optional
-  grafana:
-    container_name: bbt-grafana
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    networks:
-      - bbt-development
-    # depends_on:
-    #   - prometheus
-
-  # optional
+  # OpenTelemetry Collector
   otel-collector:
-    container_name: otel-collector
+    container_name: vnext-otel-collector
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./config/otel/otel-config.yaml:/etc/otelcol-contrib/config.yaml
@@ -157,21 +158,10 @@ services:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP http receiver
       - "55679:55679" # zpages extension
+    depends_on:
+      - openobserve
     networks:
       - bbt-development
-
-  # optional
-  # prometheus:
-  #   container_name: bbt-prometheus
-  #   image: prom/prometheus:latest
-  #   command:
-  #     - "--config.file=/etc/prometheus.yml"
-  #   volumes:
-  #     - ./config/prometheus:/etc
-  #   ports:
-  #     - "9090:9090"
-  #   networks:
-  #     - bbt-development
 
 networks:
   bbt-development:
@@ -179,8 +169,6 @@ networks:
 
 volumes:
   redis:
-  redisinsight:
   postgres:
-  pgadmin:
-  grafana:
-  # prometheus:
+  openobserve:
+  npm-cache: {}

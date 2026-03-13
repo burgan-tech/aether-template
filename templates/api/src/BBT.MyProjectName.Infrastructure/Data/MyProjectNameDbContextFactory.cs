@@ -14,7 +14,6 @@ public class MyProjectNameDbContextFactory : IDesignTimeDbContextFactory<MyProje
         optionsBuilder.UseNpgsql(GetConnectionStringFromConfiguration(), npgsqlOptions =>
         {
             npgsqlOptions.MigrationsHistoryTable("__MyProjectName_Migrations");
-            npgsqlOptions.EnableRetryOnFailure(3);
         });
 
         return new MyProjectNameDbContext(optionsBuilder.Options);

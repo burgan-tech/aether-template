@@ -1,14 +1,23 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
 WORKDIR /app
 
 RUN adduser MyProjectNameuser --disabled-password --gecos "" && chown -R MyProjectNameuser:MyProjectNameuser /app
 USER MyProjectName
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+
+# Install NETStandard.Library.Ref targeting pack for PostSharp compatibility
+RUN wget -q https://www.nuget.org/api/v2/package/NETStandard.Library.Ref/2.1.0 -O /tmp/netstandard.nupkg && \
+    mkdir -p /root/.nuget/packages/netstandard.library.ref/2.1.0 && \
+    mkdir -p /var/tmp/postsharp/NuGetFallback/NETStandard.Library.Ref/2.1.0 && \
+    unzip -q /tmp/netstandard.nupkg -d /root/.nuget/packages/netstandard.library.ref/2.1.0 && \
+    unzip -q /tmp/netstandard.nupkg -d /var/tmp/postsharp/NuGetFallback/NETStandard.Library.Ref/2.1.0 && \
+    rm /tmp/netstandard.nupkg
 
 COPY ["common.props", "/common.props"]
 COPY ["Directory.Build.props", "/Directory.Build.props"]
-COPY ["NuGet.Config", "/NuGet.Config"]
+COPY ["global.json", "/global.json"]
+COPY ["nuget.config", "/nuget.config"]
 
 WORKDIR /src
 ENV DOTNET_NUGET_SIGNATURE_VERIFICATION=false

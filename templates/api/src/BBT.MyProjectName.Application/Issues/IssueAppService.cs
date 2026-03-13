@@ -81,7 +81,6 @@ public sealed class IssueAppService(
     {
         var issue = await issueRepository.GetAsync(id, true, cancellationToken);
         issue.AddComment(input.Text, Guid.NewGuid());
-        issue.ConcurrencyStamp = input.ConcurrencyStamp;
         await issueRepository.UpdateAsync(issue, true, cancellationToken);
     }
 }

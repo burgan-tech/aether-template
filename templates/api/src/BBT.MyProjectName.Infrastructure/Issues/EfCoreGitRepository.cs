@@ -5,9 +5,7 @@ using BBT.MyProjectName.Data;
 namespace BBT.MyProjectName.Issues;
 
 public sealed class EfCoreGitRepository(
-    MyProjectNameDbContext dbContext, 
-    IServiceProvider serviceProvider,
-    ITransactionService transactionService
-    )
+    IDbContextProvider<MyProjectNameDbContext> dbContext
+)
     : EfCoreRepository<MyProjectNameDbContext, GitRepository, Guid>(
-        dbContext, serviceProvider, transactionService), IGitRepository;
+        dbContext), IGitRepository;
