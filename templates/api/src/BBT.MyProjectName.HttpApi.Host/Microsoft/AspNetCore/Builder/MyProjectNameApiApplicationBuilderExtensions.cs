@@ -9,6 +9,7 @@ public static class MyProjectNameApiApplicationBuilderExtensions
 {
     public static WebApplication UseApiHostModule(this WebApplication app)
     {
+        app.UseAetherAmbientServiceProvider();
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -17,7 +18,7 @@ public static class MyProjectNameApiApplicationBuilderExtensions
         {
             app.UseHsts();
         }
-
+        app.UseExceptionHandler();
         app.UseAppResponseCompression();
         app.UseCloudEvents();
         app.MapSubscribeHandler();
@@ -26,7 +27,7 @@ public static class MyProjectNameApiApplicationBuilderExtensions
         app.UseSecurityHeaders();
         app.UseCurrentUser();
         app.UseStaticFiles();
-
+        
         var supportedCultures = new[] { "en-US", "tr-TR" };
         var localizationOptions = new RequestLocalizationOptions()
         {
@@ -36,9 +37,11 @@ public static class MyProjectNameApiApplicationBuilderExtensions
         };
         app.UseRequestLocalization(localizationOptions);
         app.UseAetherApiVersioning();
+        app.UseHttpBodyLogging();
+        app.UseSchemaResolution();
+        app.UseAetherUnitOfWork();
         app.UseRouting();
         app.MapControllers();
-        app.UseExceptionHandler();
         app.MapAppHealthChecks();
 
         SeedTestData(app.Services);

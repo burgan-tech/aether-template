@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BBT.MyProjectName.Issues;
 
 public sealed class EfCoreIssueRepository(
-    MyProjectNameDbContext dbContext,
-    IServiceProvider serviceProvider,
-    ITransactionService transactionService)
-    : EfCoreRepository<MyProjectNameDbContext, Issue, Guid>(dbContext, serviceProvider, transactionService),
+    IDbContextProvider<MyProjectNameDbContext> dbContext)
+    : EfCoreRepository<MyProjectNameDbContext, Issue, Guid>(dbContext),
         IIssueRepository
 {
     public async override Task<IQueryable<Issue>> WithDetailsAsync()

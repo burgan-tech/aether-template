@@ -2,9 +2,11 @@ using System.IO.Compression;
 using System.Text.Json.Serialization;
 using BBT.Aether.AspNetCore.ExceptionHandling;
 using BBT.Aether.Domain.Services;
+using BBT.Aether.MultiSchema.EntityFrameworkCore.Interceptors;
 using BBT.MyProjectName.Data;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +16,7 @@ public static class MyProjectNameApiServiceCollectionExtensions
         this IServiceCollection services)
     {
         var configuration = services.GetConfiguration();
+        
         ConfigureClient(services);
         ConfigureModules(services, configuration);
         ConfigureDbContext(services, configuration);
@@ -34,6 +37,7 @@ public static class MyProjectNameApiServiceCollectionExtensions
 
     private static void ConfigureModules(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddAetherAmbientServiceProvider();
         services.AddAetherCore(options =>
         {
             options.Environment ??= Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
@@ -45,18 +49,28 @@ public static class MyProjectNameApiServiceCollectionExtensions
 
     private static void ConfigureDbContext(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddAetherDbContext<MyProjectNameDbContext>(options =>
+        services.AddSchemaResolution(options =>
+        {
+            options.HeaderKey = "X-Tenant";
+            options.QueryStringKey = "tenant";
+            options.RouteValueKey = "tenant";
+            options.ThrowIfNotFound = false;
+        });
+        
+        services.AddAetherDbContext<MyProjectNameDbContext>((sp, options) =>
         {
             options.UseNpgsql(configuration.GetConnectionString("Default"), npgsqlOptions =>
             {
                 npgsqlOptions.MigrationsHistoryTable("__MyProjectName_Migrations");
-                // Enable retrying failed database operations
-                npgsqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(30),
-                    errorCodesToAdd: null);
-            });
+            })
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+            
+            options.AddInterceptors(
+                sp.GetRequiredService<NpgsqlSchemaConnectionInterceptor>()
+            );
         });
+        services.AddSingleton<NpgsqlSchemaConnectionInterceptor>();
+        services.AddAetherUnitOfWorkMiddleware();
 
         services.AddSingleton<IDataSeedService, MyProjectNameDataSeedService>();
     }
@@ -73,7 +87,7 @@ public static class MyProjectNameApiServiceCollectionExtensions
 
     private static void ConfigureTelemetry(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddFrameworkTelemetry(configuration);
+        services.AddAetherTelemetry(configuration);
     }
 
     private static void ConfigureDistributedCache(IServiceCollection services)

@@ -12,8 +12,6 @@ public static class HealthChecksServiceCollectionExtensions
 
         // Other HealthChecks can be added here.
         healthChecksBuilder
-            .AddDapr(name: "dapr", tags: ["ready"]) // Optional
-            .AddRedis(configuration["Redis:Standalone:EndPoints:0"]!, name: "redis", tags: ["ready"]) // Optional
             .AddNpgSql(configuration.GetConnectionString("Default")!, name: "database", tags: ["ready"]) // Optional
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"]);
         

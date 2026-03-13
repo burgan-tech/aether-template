@@ -13,7 +13,7 @@ builder.Configuration.SetBasePath(Directory.GetCurrentDirectory());
 //     .Build();
 //
 // await DaprCheckForSidecarHelper.CheckAsync(daprClient);
-// builder.Configuration.AddDaprSecretStore(builder.Configuration["DAPR_SECRET_STORE_NAME"] ?? "myprojectname-secretstore", daprClient);
+// builder.Configuration.AddDaprSecretStore(builder.Configuration["DAPR_SECRET_STORE_NAME"] ?? "myprojectname-secret", daprClient);
 
 builder.WebHost.ConfigureKestrel(option => option.AddServerHeader = false);
 
