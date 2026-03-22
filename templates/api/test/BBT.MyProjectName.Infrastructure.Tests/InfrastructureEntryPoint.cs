@@ -18,7 +18,7 @@ public class InfrastructureEntryPoint : ModuleEntryPointBase
     public override void Load(IServiceCollection services)
     {
         services.AddInfrastructureModule();
-        services.AddAetherAutoMapperMapper([
+        services.AddAetherMapperlyMapper([
             typeof(MyProjectNameDomainModuleServiceCollectionExtensions), // Domain
             typeof(MyProjectNameApplicationModuleServiceCollectionExtensions) // Application
         ]);

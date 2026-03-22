@@ -77,7 +77,7 @@ public static class MyProjectNameApiServiceCollectionExtensions
 
     private static void ConfigureMapper(IServiceCollection services)
     {
-        services.AddAetherAutoMapperMapper(
+        services.AddAetherMapperlyMapper(
         [
             typeof(Program), // ApiHost
             typeof(MyProjectNameDomainModuleServiceCollectionExtensions), // Domain

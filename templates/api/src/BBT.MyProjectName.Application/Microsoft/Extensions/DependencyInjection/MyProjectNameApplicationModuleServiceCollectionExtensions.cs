@@ -19,6 +19,10 @@ public static class MyProjectNameApplicationModuleServiceCollectionExtensions
         services.AddDomainModule();
         services.AddAetherApplication();
 
+        // Mappers
+        services.AddScoped<IssueMapper>();
+        services.AddScoped<GitRepositoryMapper>();
+
         // You can register your application service here.
         services.AddScoped<IIssueAppService, IssueAppService>();
         services.AddScoped<IGitRepositoryAppService, GitRepositoryAppService>();

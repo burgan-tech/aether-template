@@ -1,14 +1,26 @@
-using AutoMapper;
+using BBT.Aether.Mapper.Mapperly;
 using BBT.MyProjectName.Issues;
+using Riok.Mapperly.Abstractions;
 
 namespace BBT.MyProjectName.GitRepositories;
 
-internal class GitRepositoryMapProfile : Profile
+[Mapper]
+public partial class GitRepositoryMapper: MapperBase<GitRepository, GitRepositoryDto>
 {
-    public GitRepositoryMapProfile()
-    {
-        CreateMap<GitRepository, GitRepositoryDto>();
-        CreateMap<CreateGitRepositoryInput, GitRepository>();
-        CreateMap<UpdateGitRepositoryInput, GitRepository>();
-    }
+    public override partial GitRepositoryDto Map(GitRepository source);
+    public override partial GitRepositoryDto Map(GitRepository source, GitRepositoryDto destination);
+}
+
+[Mapper]
+public partial class GitRepositoryCreateInputMapper: MapperBase<CreateGitRepositoryInput, GitRepository>
+{
+    public override partial GitRepository Map(CreateGitRepositoryInput source);
+    public override partial GitRepository Map(CreateGitRepositoryInput source, GitRepository destination);
+}
+
+[Mapper]
+public partial class GitRepositoryUpdateInputMapper: MapperBase<UpdateGitRepositoryInput, GitRepository>
+{
+    public override partial GitRepository Map(UpdateGitRepositoryInput source);
+    public override partial GitRepository Map(UpdateGitRepositoryInput source, GitRepository destination);
 }
