@@ -6,7 +6,7 @@ namespace BBT.MyProjectName.Issues;
 public class GitRepository : AggregateRoot<Guid>
 {
     public string Name { get; set; }
-
+    
     public GitRepository(
         Guid id,
         string name) : base(id)
@@ -14,7 +14,7 @@ public class GitRepository : AggregateRoot<Guid>
         Name = Check.NotNullOrWhiteSpace(name, nameof(name));
     }
 
-    private GitRepository()
+    public GitRepository()
     {
         //For orm
     }
